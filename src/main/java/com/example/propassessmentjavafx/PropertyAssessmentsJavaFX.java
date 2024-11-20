@@ -101,49 +101,116 @@ public class PropertyAssessmentsJavaFX extends Application {
         table.getColumns().addAll(accountNumberCol, addressCol, garageCol, neighbourhoodCol, assessedValueCol);
     }
 
+//    private List<PropertyAssessment> fetchPropertyData() {
+//        List<PropertyAssessment> propertyAssessments = new ArrayList<>();
+//        try {
+//            URL url = new URL("https://data.edmonton.ca/resource/q7d6-ambg.json");
+//            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+//            conn.setRequestMethod("GET");
+//            conn.setRequestProperty("Accept", "application/json");
+//
+//            if (conn.getResponseCode() == HttpURLConnection.HTTP_OK) {
+//                BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+//                StringBuilder response = new StringBuilder();
+//                String line;
+//
+//                while ((line = reader.readLine()) != null) {
+//                    response.append(line);
+//                }
+//                reader.close();
+//
+//                JSONArray jsonArray = new JSONArray(response.toString());
+//                System.out.println(jsonArray.length());
+//                for (int i = 0; i < jsonArray.length(); i++) {
+//                    JSONObject jsonObject = jsonArray.getJSONObject(i);
+//
+//                    int accountNumber = jsonObject.getInt("account_number");
+//                    String houseNumber = jsonObject.optString("house_number", "");
+//                    String streetName = jsonObject.optString("street_name", "");
+//                    String garage = jsonObject.optString("garage", "");
+//                    String neighbourhood = jsonObject.optString("neighbourhood", "");
+//                    int assessedValue = jsonObject.optInt("assessed_value", 0);
+//
+//                    PropertyAssessment propertyAssessment = new PropertyAssessment(
+//                            accountNumber,
+//                            new Address(houseNumber, streetName),
+//                            assessedValue,
+//                            null,  // Assessment Classes
+//                            new Neighbourhood(neighbourhood, ""),
+//                            null,   // Location
+//                            garage
+//                    );
+//
+//                    propertyAssessments.add(propertyAssessment);
+//                }
+//            }
+//            conn.disconnect();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        return propertyAssessments;
+//    }
+
     private List<PropertyAssessment> fetchPropertyData() {
         List<PropertyAssessment> propertyAssessments = new ArrayList<>();
+        int limit = 1000;  // Maximum number of records per request
+        int offset = 0;    // Starting point for fetching data
+        int count = 0;
+
         try {
-            URL url = new URL("https://data.edmonton.ca/resource/q7d6-ambg.json");
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
-            conn.setRequestProperty("Accept", "application/json");
+            while (true) {
+                URL url = new URL("https://data.edmonton.ca/resource/q7d6-ambg.json?$limit=" + limit + "&$offset=" + offset);
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("GET");
+                conn.setRequestProperty("Accept", "application/json");
 
-            if (conn.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                StringBuilder response = new StringBuilder();
-                String line;
+                if (conn.getResponseCode() == HttpURLConnection.HTTP_OK) {
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                    StringBuilder response = new StringBuilder();
+                    String line;
 
-                while ((line = reader.readLine()) != null) {
-                    response.append(line);
+                    while ((line = reader.readLine()) != null) {
+                        response.append(line);
+                    }
+                    reader.close();
+
+                    JSONArray jsonArray = new JSONArray(response.toString());
+
+                    for (int i = 0; i < jsonArray.length(); i++) {
+                        JSONObject jsonObject = jsonArray.getJSONObject(i);
+
+                        int accountNumber = jsonObject.getInt("account_number");
+                        String houseNumber = jsonObject.optString("house_number", "");
+                        String streetName = jsonObject.optString("street_name", "");
+                        if(houseNumber.isEmpty() && streetName.isEmpty()) {
+                            continue;
+                        }
+                        String garage = jsonObject.optString("garage", "");
+                        String neighbourhood = jsonObject.optString("neighbourhood", "");
+                        int assessedValue = jsonObject.optInt("assessed_value", 0);
+
+                        PropertyAssessment propertyAssessment = new PropertyAssessment(
+                                accountNumber,
+                                new Address(houseNumber, streetName),
+                                assessedValue,
+                                null,  // Assessment Classes
+                                new Neighbourhood(neighbourhood, ""),
+                                null,   // Location
+                                garage
+                        );
+
+                        propertyAssessments.add(propertyAssessment);
+                    }
+
+                    //increase the offset for the next set of 1000
+                    offset += limit;
+                    count += 1000;
+                    if(count >= 3000){
+                        break;
+                    }
                 }
-                reader.close();
-
-                JSONArray jsonArray = new JSONArray(response.toString());
-                for (int i = 0; i < jsonArray.length(); i++) {
-                    JSONObject jsonObject = jsonArray.getJSONObject(i);
-
-                    int accountNumber = jsonObject.getInt("account_number");
-                    String houseNumber = jsonObject.optString("house_number", "");
-                    String streetName = jsonObject.optString("street_name", "");
-                    String garage = jsonObject.optString("garage", "");
-                    String neighbourhood = jsonObject.optString("neighbourhood", "");
-                    int assessedValue = jsonObject.optInt("assessed_value", 0);
-
-                    PropertyAssessment propertyAssessment = new PropertyAssessment(
-                            accountNumber,
-                            new Address(houseNumber, streetName),
-                            assessedValue,
-                            null,  // Assessment Classes
-                            new Neighbourhood(neighbourhood, ""),
-                            null,   // Location
-                            garage
-                    );
-
-                    propertyAssessments.add(propertyAssessment);
-                }
+                conn.disconnect();
             }
-            conn.disconnect();
         } catch (Exception e) {
             e.printStackTrace();
         }
