@@ -119,10 +119,10 @@ public class TrialOfJoe {
         List<PropertyAssessment> propertyData = fetchPropertyData();
         System.out.println("Size of garden: " + gardenData.size() + "\n" + "Size of property: " + propertyData.size());
         int equalCount = 0;
-        for (int i = 0; i < propertyData.size(); i++){
-            for(int j = 0; j < gardenData.size(); j++) {
+        for (PropertyAssessment propertyDatum : propertyData) {
+            for (PropertyAssessment gardenDatum : gardenData) {
                 //System.out.println(propertyData.get(i).getAddress() + "  " + gardenData.get(j).getAddress());
-                if (propertyData.get(i).getAddress().equals(gardenData.get(j).getAddress())) {
+                if (propertyDatum.getAddress().equals(gardenDatum.getAddress())) {
                     equalCount += 1;
                     //System.out.println(propertyData.get(i).getAddress() + "  " + gardenData.get(j).getAddress());
                 }
