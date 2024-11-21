@@ -2,6 +2,7 @@ target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
+src/main/resources/Property_Assessment_Data_2024.csv
 
 ### IntelliJ IDEA ###
 .idea/modules.xml

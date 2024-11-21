@@ -4,6 +4,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -13,32 +14,25 @@ import java.util.List;
 public class TrialOfJoe {
     private static List<PropertyAssessment> fetchPropertyData() {
         List<PropertyAssessment> propertyAssessments = new ArrayList<>();
-        try {
-            URL url = new URL("https://data.edmonton.ca/resource/q7d6-ambg.json");
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
-            conn.setRequestProperty("Accept", "application/json");
+        String filePath = "src/main/resources/Property_Assessment_Data_2024.csv";
 
-            if (conn.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                StringBuilder response = new StringBuilder();
-                String line;
+        try (BufferedReader br = new BufferedReader(new FileReader(filePath))) {
+            String line;
 
-                while ((line = reader.readLine()) != null) {
-                    response.append(line);
-                }
-                reader.close();
+            // Skip the header line
+            br.readLine();
 
-                JSONArray jsonArray = new JSONArray(response.toString());
-                for (int i = 0; i < jsonArray.length(); i++) {
-                    JSONObject jsonObject = jsonArray.getJSONObject(i);
+            while ((line = br.readLine()) != null) {
+                // Assuming CSV format: account_number,house_number,street_name,garage,neighbourhood,assessed_value
+                String[] fields = line.split(",");
 
-                    int accountNumber = jsonObject.getInt("account_number");
-                    String houseNumber = jsonObject.optString("house_number", "");
-                    String streetName = jsonObject.optString("street_name", "");
-                    String garage = jsonObject.optString("garage", "");
-                    String neighbourhood = jsonObject.optString("neighbourhood", "");
-                    int assessedValue = jsonObject.optInt("assessed_value", 0);
+                if (fields.length >= 6) {
+                    int accountNumber = Integer.parseInt(fields[0]);
+                    String houseNumber = fields[2];
+                    String streetName = fields[3];
+                    String garage = fields[4];
+                    String neighbourhood = fields[6];
+                    int assessedValue = Integer.parseInt(fields[8]);
 
                     PropertyAssessment propertyAssessment = new PropertyAssessment(
                             accountNumber,
@@ -46,20 +40,18 @@ public class TrialOfJoe {
                             assessedValue,
                             null,  // Assessment Classes
                             new Neighbourhood(neighbourhood, ""),
-                            null,   // Location
+                            null,  // Location
                             garage
                     );
 
                     propertyAssessments.add(propertyAssessment);
                 }
             }
-            conn.disconnect();
         } catch (Exception e) {
             e.printStackTrace();
         }
         return propertyAssessments;
     }
-
 
     private static List<PropertyAssessment> fetchGardenPropertyData() {
         List<PropertyAssessment> propertyAssessments = new ArrayList<>();
@@ -132,7 +124,7 @@ public class TrialOfJoe {
                 //System.out.println(propertyData.get(i).getAddress() + "  " + gardenData.get(j).getAddress());
                 if (propertyData.get(i).getAddress().equals(gardenData.get(j).getAddress())) {
                     equalCount += 1;
-                    System.out.println(propertyData.get(i).getAddress() + "  " + gardenData.get(j).getAddress());
+                    //System.out.println(propertyData.get(i).getAddress() + "  " + gardenData.get(j).getAddress());
                 }
             }
         }
