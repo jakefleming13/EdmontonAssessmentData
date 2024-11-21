@@ -265,6 +265,7 @@ public class PropertyAssessmentsJavaFX extends Application {
      *   score = (floor area - min floor area) / (max floor area - min floor area)
      *
      * Units Added Score: 1 unit = 0.5, 2 units = 1.0
+     *
      * Neighbourhood Adjustment: Give neighbourhoods values of 0.2, 0.0, or -0.2 based on desirability
      *
      * Weights: give each score a weighted grade
