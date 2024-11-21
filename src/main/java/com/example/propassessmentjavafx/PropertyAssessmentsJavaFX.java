@@ -20,6 +20,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class PropertyAssessmentsJavaFX extends Application {
     private TableView<PropertyAssessment> table = new TableView<>();
@@ -40,7 +41,7 @@ public class PropertyAssessmentsJavaFX extends Application {
         ComboBox<String> comboBox4 = new ComboBox<>();
         comboBox1.getItems().addAll("", "<$200,000", "$200,000-$400,000", ">$400,000");
         comboBox2.getItems().addAll("", "Downtown", "Oliver", "Bearspaw");
-        comboBox3.getItems().addAll("", "Yes", "No");
+        comboBox3.getItems().addAll("", "<$75,000", "$75,000-$100,000", ">$100,000");
         comboBox4.getItems().addAll("");
 
         //placeholders
@@ -50,10 +51,10 @@ public class PropertyAssessmentsJavaFX extends Application {
         comboBox4.setPromptText("Select an option");
 
         //Labels
-        Label label1 = new Label("AVG Property Value:");
+        Label label1 = new Label("Property Value:");
         Label label2 = new Label("Neighbourhood:");
-        Label label3 = new Label("Garage:");
-        Label label4 = new Label("------:");
+        Label label3 = new Label("Construction Value:");
+        Label label4 = new Label("Garden Suite sq ft:");
 
         //layout for title and combobox
         VBox vBox1 = new VBox(5, label1, comboBox1);
@@ -76,35 +77,41 @@ public class PropertyAssessmentsJavaFX extends Application {
 
         //set scene
         Scene scene = new Scene(layout, 700, 500);
-        primaryStage.setTitle("Edmonton Property Assessment Data");
+        primaryStage.setTitle("Edmonton Garden Suite Data");
         primaryStage.setScene(scene);
         primaryStage.show();
     }
 
     private void initializeTable() {
         //define columns with cell value factories
-        TableColumn<PropertyAssessment, Integer> accountNumberCol = new TableColumn<>("Account Number");
-        accountNumberCol.setCellValueFactory(new PropertyValueFactory<>("accountNumber"));
-
         TableColumn<PropertyAssessment, String> addressCol = new TableColumn<>("Address");
         addressCol.setCellValueFactory(new PropertyValueFactory<>("address"));
-
-        TableColumn<PropertyAssessment, String> garageCol = new TableColumn<>("Garage");
-        garageCol.setCellValueFactory(new PropertyValueFactory<>("garage"));
 
         TableColumn<PropertyAssessment, String> neighbourhoodCol = new TableColumn<>("Neighbourhood");
         neighbourhoodCol.setCellValueFactory(new PropertyValueFactory<>("neighbourhood"));
 
-        TableColumn<PropertyAssessment, Integer> assessedValueCol = new TableColumn<>("Assessed Value");
+        TableColumn<PropertyAssessment, Integer> assessedValueCol = new TableColumn<>("Property Value");
         assessedValueCol.setCellValueFactory(new PropertyValueFactory<>("assessedValue"));
 
-        table.getColumns().addAll(accountNumberCol, addressCol, garageCol, neighbourhoodCol, assessedValueCol);
+        TableColumn<PropertyAssessment, String> constructionValueCol = new TableColumn<>("Construction Value");
+        constructionValueCol.setCellValueFactory(new PropertyValueFactory<>("constructionValue"));
+
+        TableColumn<PropertyAssessment, String> floorAreaCol = new TableColumn<>("Garden Suite sq ft");
+        floorAreaCol.setCellValueFactory(new PropertyValueFactory<>("floorArea"));
+
+        TableColumn<PropertyAssessment, String> unitsAddedCol = new TableColumn<>("Units Added");
+        unitsAddedCol.setCellValueFactory(new PropertyValueFactory<>("unitsAdded"));
+
+        TableColumn<PropertyAssessment, String> gradeCol = new TableColumn<>("Garden Suite Grade");
+        gradeCol.setCellValueFactory(new PropertyValueFactory<>("gardenSuiteGrade"));
+
+        table.getColumns().addAll(addressCol, neighbourhoodCol, assessedValueCol, constructionValueCol, floorAreaCol, unitsAddedCol, gradeCol);
     }
 
     private List<PropertyAssessment> fetchPropertyData() {
         List<PropertyAssessment> propertyAssessments = new ArrayList<>();
-        int limit = 1000;  // Maximum number of records per request
-        int offset = 0;    // Starting point for fetching data
+        int limit = 1000;  //Maximum number of records per request
+        int offset = 0;    //Starting point for fetching data
         int count = 0;
 
         try {
@@ -139,14 +146,38 @@ public class PropertyAssessmentsJavaFX extends Application {
                         String neighbourhood = jsonObject.optString("neighbourhood", "");
                         int assessedValue = jsonObject.optInt("assessed_value", 0);
 
+//                  Will need to list every neighbourhood and assign values:
+//                        Map<String, Double> neighborhoodAdjustments = Map.of(
+//                                "GREISBACH", 0.2,
+//                                "DOWNTOWN", 0.2,
+//                                "OLIVER", -0.2
+//                        );
+
+//                  min/max are from the max/min construction values
+//                  and max/min property values:
+//                        double minConstructionEfficiency = -80;
+//                        double maxConstructionEfficiency = -20;
+//                        double minPropertyValueEfficiency = 0.002;
+//                        double maxPropertyValueEfficiency = 0.01;
+
+//                  Call the calculate grade method to receive a grade:
+//                        double grade = calculateGrade(neighborhood, constructionValue, propertyValue, floorArea, unitsAdded,
+//                                minConstructionEfficiency, maxConstructionEfficiency,
+//                                minPropertyValueEfficiency, maxPropertyValueEfficiency,
+//                                neighborhoodAdjustments);
+
                         PropertyAssessment propertyAssessment = new PropertyAssessment(
                                 accountNumber,
                                 new Address(houseNumber, streetName),
                                 assessedValue,
-                                null,  // Assessment Classes
+                                null,  // Set to null
                                 new Neighbourhood(neighbourhood, ""),
-                                null,   // Location
-                                garage
+                                null,   // set to null
+                                garage,
+                                0,
+                                0,
+                                0,
+                                0
                         );
 
                         propertyAssessments.add(propertyAssessment);
@@ -155,7 +186,7 @@ public class PropertyAssessmentsJavaFX extends Application {
                     //increase the offset for the next set of 1000
                     offset += limit;
                     count += 1000;
-                    if(count >= 3000){
+                    if(count >= 1200){
                         break;
                     }
                 }
@@ -197,12 +228,21 @@ public class PropertyAssessmentsJavaFX extends Application {
                 matches = false;
             }
 
-            //filter by Garage
-            String garageOption = comboBox3.getValue();
-            String garage = property.getGarage();
-            if (garageOption != null && !garageOption.isEmpty()) {
-                if (garageOption.equals("Yes") && !garage.equalsIgnoreCase("Y")) matches = false;
-                else if (garageOption.equals("No") && !garage.equalsIgnoreCase("N")) matches = false;
+            //filter by Construction Value
+            String constructionValueOption = comboBox3.getValue();
+            int constructVal = property.getConstructionValue();
+            if (constructionValueOption != null && !constructionValueOption.isEmpty()) {
+                switch (constructionValueOption) {
+                    case "<$75,000":
+                        if (constructVal >= 75000) matches = false;
+                        break;
+                    case "$75,000-$100,000":
+                        if (constructVal < 75000 || constructVal > 100000) matches = false;
+                        break;
+                    case ">$100,000":
+                        if (constructVal <= 100000) matches = false;
+                        break;
+                }
             }
 
             //add the property if it matches all criteria
@@ -214,6 +254,70 @@ public class PropertyAssessmentsJavaFX extends Application {
         table.getItems().addAll(filteredData);
     }
 
+    /**
+     * Construction Efficiency Score: Penalize high construction costs relative to floor area
+     *   score = 1 - (construction value / floor area)
+     *
+     * Property Value Efficiency Score: Reward properties that add significant floor area relative to prop value
+     *   score = floor area / property value
+     *
+     * Floor Area Score: Basic normalization calculation
+     *   score = (floor area - min floor area) / (max floor area - min floor area)
+     *
+     * Units Added Score: 1 unit = 0.5, 2 units = 1.0
+     * Neighbourhood Adjustment: Give neighbourhoods values of 0.2, 0.0, or -0.2 based on desirability
+     *
+     * Weights: give each score a weighted grade
+     *  construction Efficiency = 30%, prop value efficiency = 30%
+     *  floor area = 25%, units added = 15%
+     *
+     * Normalize scores across the dataset to ensure comparability, improves data quality
+     *
+     * @return garden suite grade
+     */
+
+    public static double calculateGrade(String neighborhood, double constructionValue, double propertyValue,
+                                        double floorArea, int unitsAdded,
+                                        double minConstructionEfficiency, double maxConstructionEfficiency,
+                                        double minPropertyValueEfficiency, double maxPropertyValueEfficiency,
+                                        Map<String, Double> neighborhoodAdjustments) {
+        //calculate and normalize construction value score
+        double constructionEfficiency = 1 - (constructionValue / floorArea);
+        double normalizedConstructionEfficiency = normalize(constructionEfficiency, minConstructionEfficiency, maxConstructionEfficiency);
+
+        //calculate and normalize property value score
+        double propertyValueEfficiency = floorArea / propertyValue;
+        double normalizedPropertyValueEfficiency = normalize(propertyValueEfficiency, minPropertyValueEfficiency, maxPropertyValueEfficiency);
+
+        //floor Area Score: lowest set to 500, highest set to 1850
+        double floorAreaScore = (floorArea - 500) / (1850 - 500);
+
+        //Units added score
+        double unitsAddedScore = (unitsAdded == 1) ? 0.5 : 1.0;
+
+        //neighborhood Adjustment, if no value for the neighbourhood was assigned just use 0
+        double neighborhoodAdjustment = neighborhoodAdjustments.getOrDefault(neighborhood, 0.0);
+
+        //Construction efficiency, prop value efficiency, floor area, units added
+        double w1 = 0.3, w2 = 0.3, w3 = 0.25, w4 = 0.15;
+
+        //calculate grade with weights
+        return (w1 * normalizedConstructionEfficiency) +
+                (w2 * normalizedPropertyValueEfficiency) +
+                (w3 * floorAreaScore) +
+                (w4 * unitsAddedScore) +
+                neighborhoodAdjustment;
+    }
+
+    /**
+     * function that can be used to normalize data
+     * @param value what is being normalized
+     * @param min value in the data set
+     * @param max value in the data set
+     */
+    private static double normalize(double value, double min, double max) {
+        return (value - min) / (max - min);
+    }
 
     public static void main(String[] args) {
         launch();

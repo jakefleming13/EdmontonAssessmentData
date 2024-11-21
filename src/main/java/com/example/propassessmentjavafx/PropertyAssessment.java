@@ -4,6 +4,10 @@ import java.util.List;
 import java.util.Objects;
 
 public class PropertyAssessment implements Comparable<PropertyAssessment> {
+    private final int constructionValue;
+    private final int floorArea;
+    private final int unitsAdded;
+    private final double gardenSuiteGrade;
     private int accountNumber;
     private Address address;
     private int assessedValue;
@@ -22,7 +26,7 @@ public class PropertyAssessment implements Comparable<PropertyAssessment> {
      * @param location of type Location
      */
     public PropertyAssessment(int accountNumber, Address address, int assessedValue,
-                              List<String> assessmentClasses, Neighbourhood neighbourhood, Location location, String garage) {
+                              List<String> assessmentClasses, Neighbourhood neighbourhood, Location location, String garage, int constructionValue, int floorArea, int unitsAdded, double gardenSuiteGrade) {
         this.accountNumber = accountNumber;
         this.address = address;
         this.assessedValue = assessedValue;
@@ -30,6 +34,10 @@ public class PropertyAssessment implements Comparable<PropertyAssessment> {
         this.neighbourhood = neighbourhood;
         this.location = location;
         this.garage = garage;
+        this.constructionValue = constructionValue;
+        this.floorArea = floorArea;
+        this.unitsAdded = unitsAdded;
+        this.gardenSuiteGrade = gardenSuiteGrade;
     }
 
     /**
@@ -47,6 +55,30 @@ public class PropertyAssessment implements Comparable<PropertyAssessment> {
     public String getGarage() {
         return garage;
     }
+
+    /**
+     * getter to return the construction value
+     * @return int
+     */
+    public int getConstructionValue() {return constructionValue;}
+
+    /**
+     * getter to return the garden suite grade
+     * @return double
+     */
+    public double getGardenSuiteGrade() {return gardenSuiteGrade;}
+
+    /**
+     * getter to return the floor area
+     * @return int
+     */
+    public int getFloorArea() {return floorArea;}
+
+    /**
+     * getter to return the units added
+     * @return int
+     */
+    public int getUnitsAdded() {return unitsAdded;}
 
     /**
      * getter to return the address
