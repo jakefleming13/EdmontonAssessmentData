@@ -11,16 +11,15 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+
 
 public class PropertyAssessmentsJavaFX extends Application {
     private TableView<PropertyAssessment> table = new TableView<>();
@@ -30,16 +29,16 @@ public class PropertyAssessmentsJavaFX extends Application {
         //Init TableView and columns
         initializeTable();
 
-        //fetch and display data
-        List<PropertyAssessment> propertyData = fetchPropertyData();
-        table.getItems().addAll(propertyData);
-
         //Test garden suite data
         GardenSuiteDataFetcher fetcher = new GardenSuiteDataFetcher();
         List<GardenSuiteAssessment> assessments = fetcher.fetchGardenSuiteData();
 
-        // Print the assessments for verification
-        assessments.forEach(System.out::println);
+        //fetch and display data
+        List<PropertyAssessment> propertyData = fetchPropertyData(assessments);
+        table.getItems().addAll(propertyData);
+
+        // Verify each garden suite
+        //assessments.forEach(System.out::println);
 
         //ComboBoxes to display dropdowns
         ComboBox<String> comboBox1 = new ComboBox<>();
@@ -49,7 +48,7 @@ public class PropertyAssessmentsJavaFX extends Application {
         comboBox1.getItems().addAll("", "<$200,000", "$200,000-$400,000", ">$400,000");
         comboBox2.getItems().addAll("", "Downtown", "Oliver", "Bearspaw");
         comboBox3.getItems().addAll("", "<$75,000", "$75,000-$100,000", ">$100,000");
-        comboBox4.getItems().addAll("");
+        comboBox4.getItems().addAll("", "<650 sq ft", "650 sq ft - 1200 sq ft", ">1200 sq ft");
 
         //placeholders
         comboBox1.setPromptText("Select an option");
@@ -76,10 +75,10 @@ public class PropertyAssessmentsJavaFX extends Application {
         //overall Layout
         VBox layout = new VBox(10, comboBoxLayout, table);
 
-        comboBox1.setOnAction(event -> filterData(comboBox1, comboBox2, comboBox3, comboBox4));
-        comboBox2.setOnAction(event -> filterData(comboBox1, comboBox2, comboBox3, comboBox4));
-        comboBox3.setOnAction(event -> filterData(comboBox1, comboBox2, comboBox3, comboBox4));
-        comboBox4.setOnAction(event -> filterData(comboBox1, comboBox2, comboBox3, comboBox4));
+        comboBox1.setOnAction(event -> filterData(assessments, comboBox1, comboBox2, comboBox3, comboBox4));
+        comboBox2.setOnAction(event -> filterData(assessments, comboBox1, comboBox2, comboBox3, comboBox4));
+        comboBox3.setOnAction(event -> filterData(assessments, comboBox1, comboBox2, comboBox3, comboBox4));
+        comboBox4.setOnAction(event -> filterData(assessments, comboBox1, comboBox2, comboBox3, comboBox4));
 
         //set scene
         Scene scene = new Scene(layout, 700, 500);
@@ -114,83 +113,158 @@ public class PropertyAssessmentsJavaFX extends Application {
         table.getColumns().addAll(addressCol, neighbourhoodCol, assessedValueCol, constructionValueCol, floorAreaCol, unitsAddedCol, gradeCol);
     }
 
-    private List<PropertyAssessment> fetchPropertyData() {
+//    private List<PropertyAssessment> fetchPropertyData(List<GardenSuiteAssessment> gardenSuites) {
+//        List<PropertyAssessment> propertyAssessments = new ArrayList<>();
+//
+//        try {
+//            while (true) {
+//                URL url = new URL("https://data.edmonton.ca/resource/q7d6-ambg.json?");
+//                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+//                conn.setRequestMethod("GET");
+//                conn.setRequestProperty("Accept", "application/json");
+//
+//                if (conn.getResponseCode() == HttpURLConnection.HTTP_OK) {
+//                    BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+//                    StringBuilder response = new StringBuilder();
+//                    String line;
+//
+//                    while ((line = reader.readLine()) != null) {
+//                        response.append(line);
+//                    }
+//                    reader.close();
+//
+//                    JSONArray jsonArray = new JSONArray(response.toString());
+//
+//                    for (int i = 0; i < jsonArray.length(); i++) {
+//                        JSONObject jsonObject = jsonArray.getJSONObject(i);
+//
+//                        int constructionVal = 0;
+//                        int floorA = 0;
+//                        int unitsAdd = 0;
+//
+//                        int accountNumber = jsonObject.getInt("account_number");
+//                        String houseNumber = jsonObject.optString("house_number", "");
+//                        String streetName = jsonObject.optString("street_name", "");
+//                        if(houseNumber.isEmpty() && streetName.isEmpty()) {
+//                            continue;
+//                        }
+//                        String garage = jsonObject.optString("garage", "");
+//                        String neighbourhood = jsonObject.optString("neighbourhood", "");
+//                        int assessedValue = jsonObject.optInt("assessed_value", 0);
+//
+//                        //Loop through the garden suite data: if address.equals(address) then add the garden suites construction value, floor area, and units added to the property assessment
+//
+////                      Call the calculate grade method to receive a grade:
+////                      double grade = calculateGrade(neighborhood, constructionValue, propertyValue, floorArea, unitsAdded);
+//
+//                        //if constructionVal or floorA or unitsAdd == 0, do not create the propertyAssessment just continue
+//                        PropertyAssessment propertyAssessment = new PropertyAssessment(
+//                                accountNumber,
+//                                new Address(houseNumber, streetName),
+//                                assessedValue,
+//                                null,  // Set to null
+//                                new Neighbourhood(neighbourhood, ""),
+//                                null,   // set to null
+//                                garage,
+//                                constructionVal, //constructionValue (get from garden suite)
+//                                floorA, //floorArea (get from garden suite)
+//                                unitsAdd, //unitsAdded (get from garden suite)
+//                                0 //grade (get from calculateGrade method)
+//                        );
+//
+//                        propertyAssessments.add(propertyAssessment);
+//                    }
+//                }
+//                conn.disconnect();
+//            }
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+//        return propertyAssessments;
+//    }
+
+    private List<PropertyAssessment> fetchPropertyData(List<GardenSuiteAssessment> gardenSuites) {
         List<PropertyAssessment> propertyAssessments = new ArrayList<>();
-        int limit = 1000;  //Maximum number of records per request
-        int offset = 0;    //Starting point for fetching data
         int count = 0;
 
-        try {
-            while (true) {
-                URL url = new URL("https://data.edmonton.ca/resource/q7d6-ambg.json?$limit=" + limit + "&$offset=" + offset);
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setRequestMethod("GET");
-                conn.setRequestProperty("Accept", "application/json");
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
+                Objects.requireNonNull(getClass().getResourceAsStream("/Property_Assessment_Data_2024.csv"))))) {
+            String line = reader.readLine(); //skip header
+            while ((line = reader.readLine()) != null) {
+                String[] columns = line.split(","); // Assuming CSV is comma-separated
 
-                if (conn.getResponseCode() == HttpURLConnection.HTTP_OK) {
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                    StringBuilder response = new StringBuilder();
-                    String line;
+                //Get all fields
+                int accountNumber = Integer.parseInt(columns[0].trim());
+                String houseNumber = columns[2].trim();
+                String streetName = columns[3].trim();
+                Address propAddress = new Address(houseNumber, streetName);
+                String garage = columns[4].trim();
+                String neighbourhood = columns[6].trim();
+                int assessedValue = Integer.parseInt(columns[8].trim());
 
-                    while ((line = reader.readLine()) != null) {
-                        response.append(line);
-                    }
-                    reader.close();
+                //Only look at properties over $50,000 in value and under $2,000,000 in value
+                if(assessedValue < 50000 || assessedValue > 2000000){
+                    continue;
+                }
 
-                    JSONArray jsonArray = new JSONArray(response.toString());
+                //if address is empty continue
+                if (houseNumber.isEmpty() || streetName.isEmpty()) {
+                    continue;
+                }
 
-                    for (int i = 0; i < jsonArray.length(); i++) {
-                        JSONObject jsonObject = jsonArray.getJSONObject(i);
-
-                        int accountNumber = jsonObject.getInt("account_number");
-                        String houseNumber = jsonObject.optString("house_number", "");
-                        String streetName = jsonObject.optString("street_name", "");
-                        if(houseNumber.isEmpty() && streetName.isEmpty()) {
-                            continue;
-                        }
-                        String garage = jsonObject.optString("garage", "");
-                        String neighbourhood = jsonObject.optString("neighbourhood", "");
-                        int assessedValue = jsonObject.optInt("assessed_value", 0);
-
-//                      Call the calculate grade method to receive a grade:
-//                      double grade = calculateGrade(neighborhood, constructionValue, propertyValue, floorArea, unitsAdded);
-
-                        PropertyAssessment propertyAssessment = new PropertyAssessment(
-                                accountNumber,
-                                new Address(houseNumber, streetName),
-                                assessedValue,
-                                null,  // Set to null
-                                new Neighbourhood(neighbourhood, ""),
-                                null,   // set to null
-                                garage,
-                                0,
-                                0,
-                                0,
-                                0
-                        );
-
-                        propertyAssessments.add(propertyAssessment);
-                    }
-
-                    //increase the offset for the next set of 1000
-                    offset += limit;
-                    count += 1000;
-                    if(count >= 1200){
+                //match the garden suite data
+                int constructionVal = 0;
+                int floorA = 0;
+                int unitsAdd = 0;
+                for (GardenSuiteAssessment gardenSuite : gardenSuites) {
+                    if (gardenSuite.getAddress().equals(propAddress)) {
+                        constructionVal = (int) gardenSuite.getConstructionValue();
+                        floorA = (int) gardenSuite.getFloorArea();
+                        unitsAdd = gardenSuite.getUnitsAdded();
                         break;
                     }
                 }
-                conn.disconnect();
+
+                //skip property if no garden suite data is matched
+                if (constructionVal == 0 || floorA == 0 || unitsAdd == 0) {
+                    continue;
+                }
+
+                //call the calculate grade method to receive a grade
+                double grade = calculateGrade(neighbourhood, constructionVal, assessedValue, floorA, unitsAdd);
+
+                //create the PropertyAssessment object
+                PropertyAssessment propertyAssessment = new PropertyAssessment(
+                        accountNumber,
+                        new Address(houseNumber, streetName),
+                        assessedValue,
+                        null, // Set to null for assessment classes
+                        new Neighbourhood(neighbourhood, ""), // ignore ward
+                        null, // Set to null for Latitude and Longitude
+                        garage,
+                        constructionVal,
+                        floorA,
+                        unitsAdd,
+                        grade
+                );
+                count += 1;
+
+                propertyAssessments.add(propertyAssessment);
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        System.out.println(count);
+
         return propertyAssessments;
     }
 
-    private void filterData(ComboBox<String> comboBox1, ComboBox<String> comboBox2, ComboBox<String> comboBox3, ComboBox<String> comboBox4) {
+
+    private void filterData(List<GardenSuiteAssessment> gardenSuites, ComboBox<String> comboBox1, ComboBox<String> comboBox2, ComboBox<String> comboBox3, ComboBox<String> comboBox4) {
         List<PropertyAssessment> filteredData = new ArrayList<>();
 
-        for (PropertyAssessment property : fetchPropertyData()) {
+        for (PropertyAssessment property : fetchPropertyData(gardenSuites)) {
             boolean matches = true;
 
             //filter by Assessed Value
@@ -234,6 +308,23 @@ public class PropertyAssessmentsJavaFX extends Application {
                 }
             }
 
+            //filter by floor area Value
+            String florAreaOption = comboBox4.getValue();
+            int floorAreaVal = property.getFloorArea();
+            if (florAreaOption != null && !florAreaOption.isEmpty()) {
+                switch (florAreaOption) {
+                    case "<650 sq ft":
+                        if (floorAreaVal >= 650) matches = false;
+                        break;
+                    case "650 sq ft - 1200 sq ft":
+                        if (floorAreaVal < 650 || floorAreaVal > 1200) matches = false;
+                        break;
+                    case ">1200 sq ft":
+                        if (floorAreaVal <= 1200) matches = false;
+                        break;
+                }
+            }
+
             //add the property if it matches all criteria
             if (matches) filteredData.add(property);
         }
@@ -268,9 +359,10 @@ public class PropertyAssessmentsJavaFX extends Application {
 
     public static double calculateGrade(String neighborhood, double constructionValue, double propertyValue,
                                         double floorArea, int unitsAdded) {
+
         //Set the min/max's that will be used to normalize
-        double minConstructionEfficiency = -80;
-        double maxConstructionEfficiency = -20;
+        double minConstructionEfficiency = 0;
+        double maxConstructionEfficiency = 60;
         double minPropertyValueEfficiency = 0.002;
         double maxPropertyValueEfficiency = 0.01;
 
@@ -302,11 +394,17 @@ public class PropertyAssessmentsJavaFX extends Application {
         double w1 = 0.3, w2 = 0.3, w3 = 0.25, w4 = 0.15;
 
         //calculate grade with weights
-        return (w1 * normalizedConstructionEfficiency) +
+        double calc = (w1 * normalizedConstructionEfficiency) +
                 (w2 * normalizedPropertyValueEfficiency) +
                 (w3 * floorAreaScore) +
                 (w4 * unitsAddedScore) +
                 neighborhoodAdjustment;
+
+        //round grade
+        BigDecimal roundedValue = new BigDecimal(calc).setScale(2, RoundingMode.HALF_UP);
+
+        //return
+        return roundedValue.doubleValue();
     }
 
     /**
