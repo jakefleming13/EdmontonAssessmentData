@@ -34,6 +34,13 @@ public class PropertyAssessmentsJavaFX extends Application {
         List<PropertyAssessment> propertyData = fetchPropertyData();
         table.getItems().addAll(propertyData);
 
+        //Test garden suite data
+        GardenSuiteDataFetcher fetcher = new GardenSuiteDataFetcher();
+        List<GardenSuiteAssessment> assessments = fetcher.fetchGardenSuiteData();
+
+        // Print the assessments for verification
+        assessments.forEach(System.out::println);
+
         //ComboBoxes to display dropdowns
         ComboBox<String> comboBox1 = new ComboBox<>();
         ComboBox<String> comboBox2 = new ComboBox<>();
@@ -68,7 +75,6 @@ public class PropertyAssessmentsJavaFX extends Application {
 
         //overall Layout
         VBox layout = new VBox(10, comboBoxLayout, table);
-
 
         comboBox1.setOnAction(event -> filterData(comboBox1, comboBox2, comboBox3, comboBox4));
         comboBox2.setOnAction(event -> filterData(comboBox1, comboBox2, comboBox3, comboBox4));
@@ -146,25 +152,8 @@ public class PropertyAssessmentsJavaFX extends Application {
                         String neighbourhood = jsonObject.optString("neighbourhood", "");
                         int assessedValue = jsonObject.optInt("assessed_value", 0);
 
-//                  Will need to list every neighbourhood and assign values:
-//                        Map<String, Double> neighborhoodAdjustments = Map.of(
-//                                "GREISBACH", 0.2,
-//                                "DOWNTOWN", 0.2,
-//                                "OLIVER", -0.2
-//                        );
-
-//                  min/max are from the max/min construction values
-//                  and max/min property values:
-//                        double minConstructionEfficiency = -80;
-//                        double maxConstructionEfficiency = -20;
-//                        double minPropertyValueEfficiency = 0.002;
-//                        double maxPropertyValueEfficiency = 0.01;
-
-//                  Call the calculate grade method to receive a grade:
-//                        double grade = calculateGrade(neighborhood, constructionValue, propertyValue, floorArea, unitsAdded,
-//                                minConstructionEfficiency, maxConstructionEfficiency,
-//                                minPropertyValueEfficiency, maxPropertyValueEfficiency,
-//                                neighborhoodAdjustments);
+//                      Call the calculate grade method to receive a grade:
+//                      double grade = calculateGrade(neighborhood, constructionValue, propertyValue, floorArea, unitsAdded);
 
                         PropertyAssessment propertyAssessment = new PropertyAssessment(
                                 accountNumber,
@@ -278,10 +267,20 @@ public class PropertyAssessmentsJavaFX extends Application {
      */
 
     public static double calculateGrade(String neighborhood, double constructionValue, double propertyValue,
-                                        double floorArea, int unitsAdded,
-                                        double minConstructionEfficiency, double maxConstructionEfficiency,
-                                        double minPropertyValueEfficiency, double maxPropertyValueEfficiency,
-                                        Map<String, Double> neighborhoodAdjustments) {
+                                        double floorArea, int unitsAdded) {
+        //Set the min/max's that will be used to normalize
+        double minConstructionEfficiency = -80;
+        double maxConstructionEfficiency = -20;
+        double minPropertyValueEfficiency = 0.002;
+        double maxPropertyValueEfficiency = 0.01;
+
+        //Will need to list every neighbourhood and assign values:
+        Map<String, Double> neighborhoodAdjustments = Map.of(
+                "GREISBACH", 0.2,
+                "DOWNTOWN", 0.2,
+                "OLIVER", -0.2
+        );
+
         //calculate and normalize construction value score
         double constructionEfficiency = 1 - (constructionValue / floorArea);
         double normalizedConstructionEfficiency = normalize(constructionEfficiency, minConstructionEfficiency, maxConstructionEfficiency);
