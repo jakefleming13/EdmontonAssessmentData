@@ -46,7 +46,7 @@ public class GardenSuiteDataFetcher {
                 int floorArea = jsonObject.optInt("floor_area", 0);
                 int unitsAdded = jsonObject.optInt("units_added", 0);
 
-                if (address != null) {
+                if (address != null && constructionValue > 30000) {
                     //Reformat address to remove 'A' and 'G' from house numbers
                     String[] addressParts = address.split(" - ");
                     String houseNumberStr = addressParts[0].replaceAll("[^0-9]", ""); // Remove non-digits
