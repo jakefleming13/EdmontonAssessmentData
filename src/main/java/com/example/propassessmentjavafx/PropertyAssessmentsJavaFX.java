@@ -113,76 +113,6 @@ public class PropertyAssessmentsJavaFX extends Application {
         table.getColumns().addAll(addressCol, neighbourhoodCol, assessedValueCol, constructionValueCol, floorAreaCol, unitsAddedCol, gradeCol);
     }
 
-//    private List<PropertyAssessment> fetchPropertyData(List<GardenSuiteAssessment> gardenSuites) {
-//        List<PropertyAssessment> propertyAssessments = new ArrayList<>();
-//
-//        try {
-//            while (true) {
-//                URL url = new URL("https://data.edmonton.ca/resource/q7d6-ambg.json?");
-//                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-//                conn.setRequestMethod("GET");
-//                conn.setRequestProperty("Accept", "application/json");
-//
-//                if (conn.getResponseCode() == HttpURLConnection.HTTP_OK) {
-//                    BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-//                    StringBuilder response = new StringBuilder();
-//                    String line;
-//
-//                    while ((line = reader.readLine()) != null) {
-//                        response.append(line);
-//                    }
-//                    reader.close();
-//
-//                    JSONArray jsonArray = new JSONArray(response.toString());
-//
-//                    for (int i = 0; i < jsonArray.length(); i++) {
-//                        JSONObject jsonObject = jsonArray.getJSONObject(i);
-//
-//                        int constructionVal = 0;
-//                        int floorA = 0;
-//                        int unitsAdd = 0;
-//
-//                        int accountNumber = jsonObject.getInt("account_number");
-//                        String houseNumber = jsonObject.optString("house_number", "");
-//                        String streetName = jsonObject.optString("street_name", "");
-//                        if(houseNumber.isEmpty() && streetName.isEmpty()) {
-//                            continue;
-//                        }
-//                        String garage = jsonObject.optString("garage", "");
-//                        String neighbourhood = jsonObject.optString("neighbourhood", "");
-//                        int assessedValue = jsonObject.optInt("assessed_value", 0);
-//
-//                        //Loop through the garden suite data: if address.equals(address) then add the garden suites construction value, floor area, and units added to the property assessment
-//
-////                      Call the calculate grade method to receive a grade:
-////                      double grade = calculateGrade(neighborhood, constructionValue, propertyValue, floorArea, unitsAdded);
-//
-//                        //if constructionVal or floorA or unitsAdd == 0, do not create the propertyAssessment just continue
-//                        PropertyAssessment propertyAssessment = new PropertyAssessment(
-//                                accountNumber,
-//                                new Address(houseNumber, streetName),
-//                                assessedValue,
-//                                null,  // Set to null
-//                                new Neighbourhood(neighbourhood, ""),
-//                                null,   // set to null
-//                                garage,
-//                                constructionVal, //constructionValue (get from garden suite)
-//                                floorA, //floorArea (get from garden suite)
-//                                unitsAdd, //unitsAdded (get from garden suite)
-//                                0 //grade (get from calculateGrade method)
-//                        );
-//
-//                        propertyAssessments.add(propertyAssessment);
-//                    }
-//                }
-//                conn.disconnect();
-//            }
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//        return propertyAssessments;
-//    }
-
     private List<PropertyAssessment> fetchPropertyData(List<GardenSuiteAssessment> gardenSuites) {
         List<PropertyAssessment> propertyAssessments = new ArrayList<>();
         int count = 0;
@@ -397,11 +327,13 @@ public class PropertyAssessmentsJavaFX extends Application {
         double calc = (w1 * normalizedConstructionEfficiency) +
                 (w2 * normalizedPropertyValueEfficiency) +
                 (w3 * floorAreaScore) +
-                (w4 * unitsAddedScore) +
-                neighborhoodAdjustment;
+                (w4 * unitsAddedScore);
 
-        //round grade
-        BigDecimal roundedValue = new BigDecimal(calc).setScale(2, RoundingMode.HALF_UP);
+        //Ensure that all grades become a value out of 10
+        double mappedGrade = mapGradeToScale(calc, -1.3, 0.04, 0, 10);
+
+        // round the mapped grade to 1 decimal places
+        BigDecimal roundedValue = new BigDecimal(mappedGrade).setScale(1, RoundingMode.HALF_UP);
 
         //return
         return roundedValue.doubleValue();
@@ -415,6 +347,14 @@ public class PropertyAssessmentsJavaFX extends Application {
      */
     private static double normalize(double value, double min, double max) {
         return (value - min) / (max - min);
+    }
+
+    /**
+     * function that can be used to ensure that all grades are represented in a value out of 10
+     * @param grade what is being normalized
+     */
+    public static double mapGradeToScale(double grade, double minOldGrade, double maxOldGrade, double minNewGrade, double maxNewGrade) {
+        return ((grade - minOldGrade) * (maxNewGrade - minNewGrade)) / (maxOldGrade - minOldGrade) + minNewGrade;
     }
 
     public static void main(String[] args) {
