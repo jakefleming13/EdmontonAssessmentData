@@ -11,6 +11,10 @@ import org.json.JSONObject;
 
 public class GardenSuiteDataFetcher {
 
+    /**
+     * method that uses an api call to fetch all Edmonton garden suite data
+     * @return list of GardenSuiteAssessment objects
+     */
     public List<GardenSuiteAssessment> fetchGardenSuiteData() {
         String apiUrl = "https://data.edmonton.ca/resource/wkbv-nqd4.json";
         List<GardenSuiteAssessment> assessments = new ArrayList<>();
