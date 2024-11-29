@@ -10,6 +10,9 @@ import javafx.stage.Stage;
 
 public class GardenSuiteGradeInput {
 
+    /**
+     * method that displays the user input popup
+     */
     public void display(Stage primaryStage) {
         //create input fields
         Label propertyValueLabel = new Label("Current Property Value:");
