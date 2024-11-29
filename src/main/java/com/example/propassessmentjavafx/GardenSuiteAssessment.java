@@ -1,5 +1,7 @@
 package com.example.propassessmentjavafx;
 
+import java.util.Objects;
+
 public class GardenSuiteAssessment {
     private Address address;
     private int constructionValue;
@@ -57,6 +59,28 @@ public class GardenSuiteAssessment {
                 ", floorArea=" + floorArea +
                 ", unitsAdded=" + unitsAdded +
                 ')';
+    }
+
+    /**
+     * method that overrides the equals method
+     * @param o which is a GardenSuiteAssessment object
+     * @return boolean
+     */
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        GardenSuiteAssessment that = (GardenSuiteAssessment) o;
+        return constructionValue == that.constructionValue && floorArea == that.floorArea && unitsAdded == that.unitsAdded && Objects.equals(address, that.address);
+    }
+
+    /**
+     * method that Overrides the hashcode method
+     * @return hash
+     */
+    @Override
+    public int hashCode() {
+        return Objects.hash(address, constructionValue, floorArea, unitsAdded);
     }
 }
 
