@@ -17,12 +17,11 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
-
+import javafx.scene.control.Button;
 
 public class PropertyAssessmentsJavaFX extends Application {
-    private TableView<PropertyAssessment> table = new TableView<>();
+    private final TableView<PropertyAssessment> table = new TableView<>();
 
     @Override
     public void start(Stage primaryStage) {
@@ -37,8 +36,12 @@ public class PropertyAssessmentsJavaFX extends Application {
         List<PropertyAssessment> propertyData = fetchPropertyData(assessments);
         table.getItems().addAll(propertyData);
 
-        // Verify each garden suite
-        //assessments.forEach(System.out::println);
+        //Button to allow user to input info about a garden suite
+        Button openGradeInputButton = new Button("Input Garden Suite Data");
+        openGradeInputButton.setOnAction(event -> {
+            GardenSuiteGradeInput gradeInput = new GardenSuiteGradeInput();
+            gradeInput.display(new Stage());
+        });
 
         //ComboBoxes to display dropdowns
         ComboBox<String> comboBox1 = new ComboBox<>();
@@ -73,7 +76,9 @@ public class PropertyAssessmentsJavaFX extends Application {
         comboBoxLayout.setAlignment(Pos.CENTER);
 
         //overall Layout
-        VBox layout = new VBox(10, comboBoxLayout, table);
+        //VBox layout = new VBox(10, comboBoxLayout, table);
+        VBox layout = new VBox(10, comboBoxLayout, table, openGradeInputButton);
+        layout.setAlignment(Pos.CENTER);
 
         comboBox1.setOnAction(event -> filterData(assessments, comboBox1, comboBox2, comboBox3, comboBox4));
         comboBox2.setOnAction(event -> filterData(assessments, comboBox1, comboBox2, comboBox3, comboBox4));
@@ -161,7 +166,7 @@ public class PropertyAssessmentsJavaFX extends Application {
                 }
 
                 //call the calculate grade method to receive a grade
-                double grade = calculateGrade(neighbourhood, constructionVal, assessedValue, floorA, unitsAdd);
+                double grade = calculateGrade(constructionVal, assessedValue, floorA, unitsAdd);
 
                 //create the PropertyAssessment object
                 PropertyAssessment propertyAssessment = new PropertyAssessment(
@@ -267,27 +272,21 @@ public class PropertyAssessmentsJavaFX extends Application {
     /**
      * Construction Efficiency Score: Penalize high construction costs relative to floor area
      *   score = 1 - (construction value / floor area)
-     *
      * Property Value Efficiency Score: Reward properties that add significant floor area relative to prop value
      *   score = floor area / property value
-     *
      * Floor Area Score: Basic normalization calculation
      *   score = (floor area - min floor area) / (max floor area - min floor area)
-     *
      * Units Added Score: 1 unit = 0.5, 2 units = 1.0
-     *
      * Neighbourhood Adjustment: Give neighbourhoods values of 0.2, 0.0, or -0.2 based on desirability
-     *
      * Weights: give each score a weighted grade
      *  construction Efficiency = 30%, prop value efficiency = 30%
      *  floor area = 25%, units added = 15%
-     *
      * Normalize scores across the dataset to ensure comparability, improves data quality
      *
      * @return garden suite grade
      */
 
-    public static double calculateGrade(String neighborhood, double constructionValue, double propertyValue,
+    public static double calculateGrade(double constructionValue, double propertyValue,
                                         double floorArea, int unitsAdded) {
 
         //Set the min/max's that will be used to normalize
@@ -295,13 +294,6 @@ public class PropertyAssessmentsJavaFX extends Application {
         double maxConstructionEfficiency = 60;
         double minPropertyValueEfficiency = 0.002;
         double maxPropertyValueEfficiency = 0.01;
-
-        //Will need to list every neighbourhood and assign values:
-        Map<String, Double> neighborhoodAdjustments = Map.of(
-                "GREISBACH", 0.2,
-                "DOWNTOWN", 0.2,
-                "OLIVER", -0.2
-        );
 
         //calculate and normalize construction value score
         double constructionEfficiency = 1 - (constructionValue / floorArea);
@@ -316,9 +308,6 @@ public class PropertyAssessmentsJavaFX extends Application {
 
         //Units added score
         double unitsAddedScore = (unitsAdded == 1) ? 0.5 : 1.0;
-
-        //neighborhood Adjustment, if no value for the neighbourhood was assigned just use 0
-        double neighborhoodAdjustment = neighborhoodAdjustments.getOrDefault(neighborhood, 0.0);
 
         //Construction efficiency, prop value efficiency, floor area, units added
         double w1 = 0.3, w2 = 0.3, w3 = 0.25, w4 = 0.15;
