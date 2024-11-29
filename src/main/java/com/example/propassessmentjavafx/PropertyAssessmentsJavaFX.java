@@ -92,6 +92,9 @@ public class PropertyAssessmentsJavaFX extends Application {
         primaryStage.show();
     }
 
+    /**
+     * method that creates our data table through javaFX
+     */
     private void initializeTable() {
         //define columns with cell value factories
         TableColumn<PropertyAssessment, String> addressCol = new TableColumn<>("Address");
@@ -118,6 +121,11 @@ public class PropertyAssessmentsJavaFX extends Application {
         table.getColumns().addAll(addressCol, neighbourhoodCol, assessedValueCol, constructionValueCol, floorAreaCol, unitsAddedCol, gradeCol);
     }
 
+    /**
+     * method that retrieves property assessment data from the provided csv file and combines garden suite data
+     * @param gardenSuites all garden suite data
+     * @return list of property assessments
+     */
     private List<PropertyAssessment> fetchPropertyData(List<GardenSuiteAssessment> gardenSuites) {
         List<PropertyAssessment> propertyAssessments = new ArrayList<>();
         int count = 0;
@@ -195,7 +203,14 @@ public class PropertyAssessmentsJavaFX extends Application {
         return propertyAssessments;
     }
 
-
+    /**
+     * method that allows our dropdowns to filter garden suite data
+     * @param gardenSuites list of all gardenSuites
+     * @param comboBox1 dropdown 1
+     * @param comboBox2 dropdown 2
+     * @param comboBox3 dropdown 3
+     * @param comboBox4 dropdown 4
+     */
     private void filterData(List<GardenSuiteAssessment> gardenSuites, ComboBox<String> comboBox1, ComboBox<String> comboBox2, ComboBox<String> comboBox3, ComboBox<String> comboBox4) {
         List<PropertyAssessment> filteredData = new ArrayList<>();
 
