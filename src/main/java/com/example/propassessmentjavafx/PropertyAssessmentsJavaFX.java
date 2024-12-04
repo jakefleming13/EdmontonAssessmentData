@@ -1,5 +1,10 @@
 package com.example.propassessmentjavafx;
 
+import com.esri.arcgisruntime.ArcGISRuntimeEnvironment;
+import com.esri.arcgisruntime.mapping.ArcGISMap;
+import com.esri.arcgisruntime.mapping.BasemapStyle;
+import com.esri.arcgisruntime.mapping.view.MapView;
+import com.esri.arcgisruntime.mapping.Basemap;
 import javafx.application.Application;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -9,6 +14,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import java.io.BufferedReader;
@@ -36,12 +42,32 @@ public class PropertyAssessmentsJavaFX extends Application {
         List<PropertyAssessment> propertyData = fetchPropertyData(assessments);
         table.getItems().addAll(propertyData);
 
+        // Authenticate ArcGIS with API key
+        String apiKey = System.getenv("ARCGIS_KEY");
+        ArcGISRuntimeEnvironment.setApiKey(apiKey);
+        //System.out.println("API key: " + apiKey);
+
         //Button to allow user to input info about a garden suite
         Button openGradeInputButton = new Button("Input Garden Suite Data");
         openGradeInputButton.setOnAction(event -> {
             GardenSuiteGradeInput gradeInput = new GardenSuiteGradeInput();
             gradeInput.display(new Stage());
         });
+
+        //Button to allow user to view map of all garden suites
+        Button openMapButton = new Button("Open Map");
+
+        // MapView for ArcGIS
+        MapView mapView = new MapView();
+        ArcGISMap map = new ArcGISMap(BasemapStyle.ARCGIS_IMAGERY_STANDARD);
+        mapView.setMap(map);
+
+        // Map Scene
+        StackPane mapLayout = new StackPane(mapView);
+        Scene mapScene = new Scene(mapLayout, 800, 600);
+
+        // Switch scenes on button click
+        openMapButton.setOnAction(e -> primaryStage.setScene(mapScene));
 
         //ComboBoxes to display dropdowns
         ComboBox<String> comboBox1 = new ComboBox<>();
@@ -77,7 +103,7 @@ public class PropertyAssessmentsJavaFX extends Application {
 
         //overall Layout
         //VBox layout = new VBox(10, comboBoxLayout, table);
-        VBox layout = new VBox(10, comboBoxLayout, table, openGradeInputButton);
+        VBox layout = new VBox(10, comboBoxLayout, table, openGradeInputButton, openMapButton);
         layout.setAlignment(Pos.CENTER);
 
         comboBox1.setOnAction(event -> filterData(assessments, comboBox1, comboBox2, comboBox3, comboBox4));
