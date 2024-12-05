@@ -46,6 +46,9 @@ public class PropertyAssessmentsJavaFX extends Application {
         primaryStage.show();
     }
 
+    /**
+     * Method that allows us to init our initial Scene
+     */
     private Scene createStartScene(Stage primaryStage) {
         //init TableView
         initializeTable();
@@ -119,6 +122,9 @@ public class PropertyAssessmentsJavaFX extends Application {
         return new Scene(layout, 825, 550);
     }
 
+    /**
+     * private method that allows us to display a map of all garden suites
+     */
     private Button getMapButton(Stage primaryStage) {
         Button openMapButton = new Button("Garden Suite Map");
 
