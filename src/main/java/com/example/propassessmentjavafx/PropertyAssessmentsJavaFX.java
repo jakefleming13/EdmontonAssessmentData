@@ -7,6 +7,7 @@ import com.esri.arcgisruntime.geometry.SpatialReference;
 import com.esri.arcgisruntime.mapping.ArcGISMap;
 import com.esri.arcgisruntime.mapping.BasemapStyle;
 import com.esri.arcgisruntime.mapping.Viewpoint;
+import com.esri.arcgisruntime.mapping.view.GraphicsOverlay;
 import com.esri.arcgisruntime.mapping.view.MapView;
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -34,6 +35,7 @@ import javafx.scene.control.Button;
 public class PropertyAssessmentsJavaFX extends Application {
     private final TableView<PropertyAssessment> table = new TableView<>();
     private MapView mapView;
+    private GraphicsOverlay graphicsOverlay;
 
 
     public void start(Stage primaryStage) {
@@ -73,7 +75,7 @@ public class PropertyAssessmentsJavaFX extends Application {
         });
 
         //map button to nav to map
-        Button openMapButton = getMapButton(primaryStage);
+        Button openMapButton = getMapButton(primaryStage, propertyData);
 
         //dropdown and Labels setup
         ComboBox<String> comboBox1 = new ComboBox<>();
@@ -125,7 +127,7 @@ public class PropertyAssessmentsJavaFX extends Application {
     /**
      * private method that allows us to display a map of all garden suites
      */
-    private Button getMapButton(Stage primaryStage) {
+    private Button getMapButton(Stage primaryStage, List<PropertyAssessment> propertyData) {
         Button openMapButton = new Button("Garden Suite Map");
 
         //mapView for ArcGIS
@@ -148,6 +150,16 @@ public class PropertyAssessmentsJavaFX extends Application {
         //create a map view and set the map to it
         mapView = new MapView();
         mapView.setMap(map);
+
+        // Create graphic pins
+        // create the graphics overlay
+        graphicsOverlay = new GraphicsOverlay();
+
+        // add the graphic overlay to the map view
+        mapView.getGraphicsOverlays().add(graphicsOverlay);
+
+        // Function to add points
+        GardenSuiteCreateMapPoints.createMapPoints(propertyData, graphicsOverlay);
 
         //Add back button to allow for navigation
         Button backButton = new Button("Back");
@@ -239,6 +251,9 @@ public class PropertyAssessmentsJavaFX extends Application {
                 String garage = columns[4].trim();
                 String neighbourhood = columns[6].trim();
                 int assessedValue = Integer.parseInt(columns[8].trim());
+                double latitude = Double.parseDouble(columns[9].trim());
+                double longitude = Double.parseDouble(columns[10].trim());
+                Location location = new Location(latitude, longitude);
 
                 //Only look at properties over $50,000 in value and under $2,000,000 in value
                 if(assessedValue < 50000 || assessedValue > 2000000){
@@ -278,7 +293,7 @@ public class PropertyAssessmentsJavaFX extends Application {
                         assessedValue,
                         null, // Set to null for assessment classes
                         new Neighbourhood(neighbourhood, ""), // ignore ward
-                        null, // Set to null for Latitude and Longitude
+                        location,
                         garage,
                         constructionVal,
                         floorA,

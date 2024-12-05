@@ -1,5 +1,8 @@
 package com.example.propassessmentjavafx;
 
+import com.esri.arcgisruntime.geometry.Point;
+import com.esri.arcgisruntime.geometry.SpatialReference;
+
 import java.util.Objects;
 
 public class GardenSuiteAssessment {
@@ -7,6 +10,7 @@ public class GardenSuiteAssessment {
     private int constructionValue;
     private int floorArea;
     private int unitsAdded;
+    private Point coordinates;
 
     public GardenSuiteAssessment(Address address, int constructionValue, int floorArea, int unitsAdded) {
         this.address = address;
