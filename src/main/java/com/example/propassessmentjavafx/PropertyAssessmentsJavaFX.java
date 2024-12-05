@@ -13,6 +13,7 @@ import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
@@ -22,6 +23,8 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -173,13 +176,43 @@ public class PropertyAssessmentsJavaFX extends Application {
                 }
             });
         });
-
-        //overlay back button in top left corner
-        StackPane mapLayout = new StackPane(mapView, backButton);
         StackPane.setAlignment(backButton, Pos.TOP_LEFT);
         backButton.setPadding(new Insets(10));
 
-        //width x height
+        // Create a label for the title
+        Label titleLabel = new Label("Grade");
+        titleLabel.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-padding: 5px;"); // Style the title
+
+        // Create a small legend bar
+        VBox legend = new VBox(5); // Vertical layout for legend
+        legend.setPadding(new Insets(20));
+        legend.setStyle("-fx-background-color: rgba(255, 255, 255, 0.8); -fx-border-color: black; -fx-border-width: 1;");
+        legend.setAlignment(Pos.TOP_LEFT);
+        // Set the legend size
+        // Limit the width of the legend to 30% of the window width
+        legend.setMaxWidth(80); // Assuming the window is 800px wide; 800 * 0.3 = 240
+        legend.setMaxHeight(100); // Assuming the window is 800px wide; 800 * 0.3 = 240
+
+        // Add the title label to the VBox
+        legend.getChildren().add(titleLabel);
+
+        // Add items to the legend
+        legend.getChildren().addAll(
+                createLegendItem(Color.GREY, "1-3"),
+                createLegendItem(Color.GREEN, "4-5"),
+                createLegendItem(Color.BLUE, "6-7"),
+                createLegendItem(Color.PURPLE, "8-9"),
+                createLegendItem(Color.ORANGE, "10")
+        );
+
+        // Align the legend on the top-right corner
+        StackPane.setAlignment(legend, Pos.TOP_RIGHT);
+        legend.setPadding(new Insets(10));
+
+        // Add mapView, back button, and legend to the layout
+        StackPane mapLayout = new StackPane(mapView, backButton, legend);
+
+        // Create the scene
         Scene mapScene = new Scene(mapLayout, 800, 600);
 
         //switch scenes by restarting the app
@@ -197,6 +230,22 @@ public class PropertyAssessmentsJavaFX extends Application {
         if (mapView != null) {
             mapView.dispose();
         }
+    }
+
+    /**
+     * Method that creates Hboxes in legend bar
+     * @param color
+     * @return
+     */
+    private HBox createLegendItem(Color color, String description) {
+        Rectangle colorBox = new Rectangle(15, 15, color); // Small square for color
+        Label label = new Label(description);
+        label.setStyle("-fx-font-size: 12;");
+
+        HBox legendItem = new HBox(10, colorBox, label);
+        legendItem.setAlignment(Pos.TOP_LEFT);
+        legendItem.setPadding(new Insets(2)); // Minimal padding
+        return legendItem;
     }
 
     /**
