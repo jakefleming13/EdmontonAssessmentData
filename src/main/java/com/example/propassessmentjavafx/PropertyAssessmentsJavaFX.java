@@ -1,26 +1,32 @@
 package com.example.propassessmentjavafx;
 
 import com.esri.arcgisruntime.ArcGISRuntimeEnvironment;
+import com.esri.arcgisruntime.concurrent.ListenableFuture;
 import com.esri.arcgisruntime.geometry.Envelope;
 import com.esri.arcgisruntime.geometry.Point;
 import com.esri.arcgisruntime.geometry.SpatialReference;
 import com.esri.arcgisruntime.mapping.ArcGISMap;
 import com.esri.arcgisruntime.mapping.BasemapStyle;
 import com.esri.arcgisruntime.mapping.Viewpoint;
+import com.esri.arcgisruntime.mapping.view.Graphic;
+import com.esri.arcgisruntime.mapping.view.GraphicsOverlay;
+import com.esri.arcgisruntime.mapping.view.IdentifyGraphicsOverlayResult;
 import com.esri.arcgisruntime.mapping.view.MapView;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
+import javafx.geometry.Point2D;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.input.MouseButton;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
 import javafx.stage.Stage;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -29,12 +35,12 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import javafx.scene.control.Button;
 
 public class PropertyAssessmentsJavaFX extends Application {
     private final TableView<PropertyAssessment> table = new TableView<>();
     private MapView mapView;
-
+    private GraphicsOverlay graphicsOverlay;
+    private ListenableFuture<IdentifyGraphicsOverlayResult> identifyGraphics;
 
     public void start(Stage primaryStage) {
         //save a reference to the original scene
@@ -73,7 +79,7 @@ public class PropertyAssessmentsJavaFX extends Application {
         });
 
         //map button to nav to map
-        Button openMapButton = getMapButton(primaryStage);
+        Button openMapButton = getMapButton(primaryStage, propertyData);
 
         //dropdown and Labels setup
         ComboBox<String> comboBox1 = new ComboBox<>();
@@ -125,7 +131,7 @@ public class PropertyAssessmentsJavaFX extends Application {
     /**
      * private method that allows us to display a map of all garden suites
      */
-    private Button getMapButton(Stage primaryStage) {
+    private Button getMapButton(Stage primaryStage, List<PropertyAssessment> propertyData) {
         Button openMapButton = new Button("Garden Suite Map");
 
         //mapView for ArcGIS
@@ -149,6 +155,29 @@ public class PropertyAssessmentsJavaFX extends Application {
         mapView = new MapView();
         mapView.setMap(map);
 
+        // Create graphic pins
+        // create the graphics overlay
+        graphicsOverlay = new GraphicsOverlay();
+
+        // add the graphic overlay to the map view
+        mapView.getGraphicsOverlays().add(graphicsOverlay);
+
+        // Function to add graphics points to map
+        GardenSuiteCreateMapPoints.createMapPoints(propertyData, graphicsOverlay);
+
+        // Set up event handler to lisen for clicks on map
+        mapView.setOnMouseClicked(event -> {
+            if (event.getButton() == MouseButton.PRIMARY && event.isStillSincePress()){
+                // create a point from location clicked
+                Point2D mapViewPoint = new Point2D(event.getX(), event.getY());
+
+                // identify graphics on the graphics overlay
+                identifyGraphics = mapView.identifyGraphicsOverlayAsync(graphicsOverlay, mapViewPoint, 10, false);
+
+                identifyGraphics.addDoneListener(() -> Platform.runLater(this::createGraphicDialog));
+            }
+        });
+
         //Add back button to allow for navigation
         Button backButton = new Button("Back");
         backButton.setOnAction(e -> {
@@ -161,19 +190,77 @@ public class PropertyAssessmentsJavaFX extends Application {
                 }
             });
         });
-
-        //overlay back button in top left corner
-        StackPane mapLayout = new StackPane(mapView, backButton);
         StackPane.setAlignment(backButton, Pos.TOP_LEFT);
         backButton.setPadding(new Insets(10));
 
-        //width x height
+        // Create a label for the title
+        Label titleLabel = new Label("Grade");
+        titleLabel.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-padding: 5px;"); // Style the title
+
+        // Create a small legend bar
+        VBox legend = new VBox(5); // Vertical layout for legend
+        legend.setPadding(new Insets(20));
+        legend.setStyle("-fx-background-color: rgba(255, 255, 255, 0.8); -fx-border-color: black; -fx-border-width: 1;");
+        legend.setAlignment(Pos.TOP_LEFT);
+        // Set the legend size
+        // Limit the width of the legend to 30% of the window width
+        legend.setMaxWidth(80); // Assuming the window is 800px wide; 800 * 0.3 = 240
+        legend.setMaxHeight(100); // Assuming the window is 800px wide; 800 * 0.3 = 240
+
+        // Add the title label to the VBox
+        legend.getChildren().add(titleLabel);
+
+        // Add items to the legend
+        legend.getChildren().addAll(
+                createLegendItem(Color.GREY, "1-3"),
+                createLegendItem(Color.LIGHTGREEN, "4-5"),
+                createLegendItem(Color.BLUE, "6-7"),
+                createLegendItem(Color.MAGENTA, "8-9"),
+                createLegendItem(Color.ORANGE, "10")
+        );
+
+        // Align the legend on the top-right corner
+        StackPane.setAlignment(legend, Pos.TOP_RIGHT);
+        legend.setPadding(new Insets(10));
+
+        // Add mapView, back button, and legend to the layout
+        StackPane mapLayout = new StackPane(mapView, backButton, legend);
+
+        // Create the scene
         Scene mapScene = new Scene(mapLayout, 800, 600);
 
         //switch scenes by restarting the app
         openMapButton.setOnAction(e -> primaryStage.setScene(mapScene));
 
         return openMapButton;
+    }
+
+    /**
+     * Indicates when a graphic is clicked by showing an Alert.
+     */
+    private void createGraphicDialog() {
+
+        try {
+            // get the list of graphics returned by identify
+            IdentifyGraphicsOverlayResult result = identifyGraphics.get();
+            Graphic graphic = result.getGraphics().get(0);
+
+            if (!(graphic == null)) {
+                // show an alert dialog box if a graphic was returned
+                var dialog = new Alert(Alert.AlertType.INFORMATION);
+                dialog.initOwner(mapView.getScene().getWindow());
+                dialog.setHeaderText(null);
+                dialog.setTitle("Garden Suite Information");
+                dialog.setContentText("Address: " + graphic.getAttributes().get("ADDRESS") +
+                        "\nAssessed Value of parent: $" + graphic.getAttributes().get("ASSESSED_VALUE") +
+                        "\nConstruction value of garden suite: $" + graphic.getAttributes().get("CONSTRUCTION_VALUE") +
+                        "\nGrade: " + graphic.getAttributes().get("GRADE"));
+                dialog.showAndWait();
+            }
+        } catch (Exception e) {
+            // on any error, display the stack trace
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -185,6 +272,22 @@ public class PropertyAssessmentsJavaFX extends Application {
         if (mapView != null) {
             mapView.dispose();
         }
+    }
+
+    /**
+     * Method that creates Hboxes in legend bar
+     * @param color
+     * @return
+     */
+    private HBox createLegendItem(Color color, String description) {
+        Rectangle colorBox = new Rectangle(15, 15, color); // Small square for color
+        Label label = new Label(description);
+        label.setStyle("-fx-font-size: 12;");
+
+        HBox legendItem = new HBox(10, colorBox, label);
+        legendItem.setAlignment(Pos.TOP_LEFT);
+        legendItem.setPadding(new Insets(2)); // Minimal padding
+        return legendItem;
     }
 
     /**
@@ -239,6 +342,9 @@ public class PropertyAssessmentsJavaFX extends Application {
                 String garage = columns[4].trim();
                 String neighbourhood = columns[6].trim();
                 int assessedValue = Integer.parseInt(columns[8].trim());
+                double latitude = Double.parseDouble(columns[9].trim());
+                double longitude = Double.parseDouble(columns[10].trim());
+                Location location = new Location(latitude, longitude);
 
                 //Only look at properties over $50,000 in value and under $2,000,000 in value
                 if(assessedValue < 50000 || assessedValue > 2000000){
@@ -278,7 +384,7 @@ public class PropertyAssessmentsJavaFX extends Application {
                         assessedValue,
                         null, // Set to null for assessment classes
                         new Neighbourhood(neighbourhood, ""), // ignore ward
-                        null, // Set to null for Latitude and Longitude
+                        location,
                         garage,
                         constructionVal,
                         floorA,

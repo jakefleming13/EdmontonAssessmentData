@@ -1,5 +1,8 @@
 package com.example.propassessmentjavafx;
 
+import com.esri.arcgisruntime.geometry.Point;
+import com.esri.arcgisruntime.geometry.SpatialReference;
+
 import java.util.Objects;
 
 public class GardenSuiteAssessment {

@@ -17,6 +17,18 @@ public class Location {
     }
 
     /**
+     *  Getter to get latitude
+     * @return double
+     */
+    public double getLatitude() {return latitude;}
+
+    /**
+     *  Getter to get longitude
+     * @return double
+     */
+    public double getLongitude() {return longitude;}
+
+    /**
      * Method that overrides the toString class
      * @return String
      */
