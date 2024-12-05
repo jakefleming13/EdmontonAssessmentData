@@ -212,14 +212,13 @@ public class PropertyAssessmentsJavaFX extends Application {
 
         // Add items to the legend
         legend.getChildren().addAll(
-                createLegendItem(Color.GREY, "1-3"),
-                createLegendItem(Color.LIGHTGREEN, "4-5"),
-                createLegendItem(Color.BLUE, "6-7"),
-                createLegendItem(Color.MAGENTA, "8-9"),
-                createLegendItem(Color.ORANGE, "10")
+                createLegendItem(Color.RED, "0-3"),
+                createLegendItem(Color.YELLOW, "3-5"),
+                createLegendItem(Color.LIGHTGREEN, "5-7"),
+                createLegendItem(Color.GREEN, "7-10")
         );
 
-        // Align the legend on the top-right corner
+        // Align the legend in the top-right corner
         StackPane.setAlignment(legend, Pos.TOP_RIGHT);
         legend.setPadding(new Insets(10));
 
