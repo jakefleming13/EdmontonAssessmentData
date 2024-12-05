@@ -213,9 +213,9 @@ public class PropertyAssessmentsJavaFX extends Application {
         // Add items to the legend
         legend.getChildren().addAll(
                 createLegendItem(Color.GREY, "1-3"),
-                createLegendItem(Color.GREEN, "4-5"),
+                createLegendItem(Color.LIGHTGREEN, "4-5"),
                 createLegendItem(Color.BLUE, "6-7"),
-                createLegendItem(Color.PURPLE, "8-9"),
+                createLegendItem(Color.MAGENTA, "8-9"),
                 createLegendItem(Color.ORANGE, "10")
         );
 
@@ -243,15 +243,18 @@ public class PropertyAssessmentsJavaFX extends Application {
         try {
             // get the list of graphics returned by identify
             IdentifyGraphicsOverlayResult result = identifyGraphics.get();
-            List<Graphic> graphics = result.getGraphics();
+            Graphic graphic = result.getGraphics().get(0);
 
-            if (!graphics.isEmpty()) {
+            if (!(graphic == null)) {
                 // show an alert dialog box if a graphic was returned
                 var dialog = new Alert(Alert.AlertType.INFORMATION);
                 dialog.initOwner(mapView.getScene().getWindow());
                 dialog.setHeaderText(null);
                 dialog.setTitle("Garden Suite Information");
-                dialog.setContentText("Nothing yet, come back later");
+                dialog.setContentText("Address: " + graphic.getAttributes().get("ADDRESS") +
+                        "\nAssessed Value of parent: $" + graphic.getAttributes().get("ASSESSED_VALUE") +
+                        "\nConstruction value of garden suite: $" + graphic.getAttributes().get("CONSTRUCTION_VALUE") +
+                        "\nGrade: " + graphic.getAttributes().get("GRADE"));
                 dialog.showAndWait();
             }
         } catch (Exception e) {

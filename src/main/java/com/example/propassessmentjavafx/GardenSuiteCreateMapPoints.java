@@ -52,6 +52,12 @@ public class GardenSuiteCreateMapPoints {
             else if(grade < 10.0) {graphic = new Graphic(coordinates, epicRatingSymbol);}
             else{graphic = new Graphic(coordinates, legendaryRatingSymbol);}
 
+            // Attach garden suite attributes to graphic
+            graphic.getAttributes().put("ADDRESS", String.valueOf(assessment.getAddress()));
+            graphic.getAttributes().put("ASSESSED_VALUE", String.valueOf(assessment.getAssessedValue()));
+            graphic.getAttributes().put("CONSTRUCTION_VALUE", String.valueOf(assessment.getConstructionValue()));
+            graphic.getAttributes().put("GRADE", String.valueOf(grade));
+
             graphicsOverlay.getGraphics().add(graphic);
         }
 
