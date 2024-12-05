@@ -251,7 +251,7 @@ public class PropertyAssessmentsJavaFX extends Application {
                 dialog.setHeaderText(null);
                 dialog.setTitle("Garden Suite Information");
                 dialog.setContentText("Address: " + graphic.getAttributes().get("ADDRESS") +
-                        "\nAssessed Value of parent: $" + graphic.getAttributes().get("ASSESSED_VALUE") +
+                        "\nAssessed Value of property: $" + graphic.getAttributes().get("ASSESSED_VALUE") +
                         "\nConstruction value of garden suite: $" + graphic.getAttributes().get("CONSTRUCTION_VALUE") +
                         "\nGrade: " + graphic.getAttributes().get("GRADE"));
                 dialog.showAndWait();
