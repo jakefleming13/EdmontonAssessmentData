@@ -398,8 +398,6 @@ public class PropertyAssessmentsJavaFX extends Application {
             e.printStackTrace();
         }
 
-        System.out.println(count);
-
         return propertyAssessments;
     }
 
