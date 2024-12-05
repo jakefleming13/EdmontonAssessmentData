@@ -1,25 +1,27 @@
 package com.example.propassessmentjavafx;
 
 import com.esri.arcgisruntime.ArcGISRuntimeEnvironment;
+import com.esri.arcgisruntime.concurrent.ListenableFuture;
 import com.esri.arcgisruntime.geometry.Envelope;
 import com.esri.arcgisruntime.geometry.Point;
 import com.esri.arcgisruntime.geometry.SpatialReference;
 import com.esri.arcgisruntime.mapping.ArcGISMap;
 import com.esri.arcgisruntime.mapping.BasemapStyle;
 import com.esri.arcgisruntime.mapping.Viewpoint;
+import com.esri.arcgisruntime.mapping.view.Graphic;
 import com.esri.arcgisruntime.mapping.view.GraphicsOverlay;
+import com.esri.arcgisruntime.mapping.view.IdentifyGraphicsOverlayResult;
 import com.esri.arcgisruntime.mapping.view.MapView;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
+import javafx.geometry.Point2D;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.input.MouseButton;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -33,13 +35,12 @@ import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import javafx.scene.control.Button;
 
 public class PropertyAssessmentsJavaFX extends Application {
     private final TableView<PropertyAssessment> table = new TableView<>();
     private MapView mapView;
     private GraphicsOverlay graphicsOverlay;
-
+    private ListenableFuture<IdentifyGraphicsOverlayResult> identifyGraphics;
 
     public void start(Stage primaryStage) {
         //save a reference to the original scene
@@ -161,8 +162,21 @@ public class PropertyAssessmentsJavaFX extends Application {
         // add the graphic overlay to the map view
         mapView.getGraphicsOverlays().add(graphicsOverlay);
 
-        // Function to add points
+        // Function to add graphics points to map
         GardenSuiteCreateMapPoints.createMapPoints(propertyData, graphicsOverlay);
+
+        // Set up event handler to lisen for clicks on map
+        mapView.setOnMouseClicked(event -> {
+            if (event.getButton() == MouseButton.PRIMARY && event.isStillSincePress()){
+                // create a point from location clicked
+                Point2D mapViewPoint = new Point2D(event.getX(), event.getY());
+
+                // identify graphics on the graphics overlay
+                identifyGraphics = mapView.identifyGraphicsOverlayAsync(graphicsOverlay, mapViewPoint, 10, false);
+
+                identifyGraphics.addDoneListener(() -> Platform.runLater(this::createGraphicDialog));
+            }
+        });
 
         //Add back button to allow for navigation
         Button backButton = new Button("Back");
@@ -219,6 +233,31 @@ public class PropertyAssessmentsJavaFX extends Application {
         openMapButton.setOnAction(e -> primaryStage.setScene(mapScene));
 
         return openMapButton;
+    }
+
+    /**
+     * Indicates when a graphic is clicked by showing an Alert.
+     */
+    private void createGraphicDialog() {
+
+        try {
+            // get the list of graphics returned by identify
+            IdentifyGraphicsOverlayResult result = identifyGraphics.get();
+            List<Graphic> graphics = result.getGraphics();
+
+            if (!graphics.isEmpty()) {
+                // show an alert dialog box if a graphic was returned
+                var dialog = new Alert(Alert.AlertType.INFORMATION);
+                dialog.initOwner(mapView.getScene().getWindow());
+                dialog.setHeaderText(null);
+                dialog.setTitle("Garden Suite Information");
+                dialog.setContentText("Nothing yet, come back later");
+                dialog.showAndWait();
+            }
+        } catch (Exception e) {
+            // on any error, display the stack trace
+            e.printStackTrace();
+        }
     }
 
     /**
