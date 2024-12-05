@@ -1,8 +1,13 @@
 package com.example.propassessmentjavafx;
 
 import com.esri.arcgisruntime.ArcGISRuntimeEnvironment;
+import com.esri.arcgisruntime.geometry.Envelope;
+import com.esri.arcgisruntime.geometry.Point;
+import com.esri.arcgisruntime.geometry.SpatialReference;
+import com.esri.arcgisruntime.geometry.SpatialReferences;
 import com.esri.arcgisruntime.mapping.ArcGISMap;
 import com.esri.arcgisruntime.mapping.BasemapStyle;
+import com.esri.arcgisruntime.mapping.Viewpoint;
 import com.esri.arcgisruntime.mapping.view.MapView;
 import com.esri.arcgisruntime.mapping.Basemap;
 import javafx.application.Application;
@@ -28,7 +33,7 @@ import javafx.scene.control.Button;
 
 public class PropertyAssessmentsJavaFX extends Application {
     private final TableView<PropertyAssessment> table = new TableView<>();
-
+    private MapView mapView;
     @Override
     public void start(Stage primaryStage) {
         //Init TableView and columns
@@ -54,20 +59,9 @@ public class PropertyAssessmentsJavaFX extends Application {
             gradeInput.display(new Stage());
         });
 
+        // --------- Map Stuff --------
         //Button to allow user to view map of all garden suites
-        Button openMapButton = new Button("Open Map");
-
-        // MapView for ArcGIS
-        MapView mapView = new MapView();
-        ArcGISMap map = new ArcGISMap(BasemapStyle.ARCGIS_IMAGERY_STANDARD);
-        mapView.setMap(map);
-
-        // Map Scene
-        StackPane mapLayout = new StackPane(mapView);
-        Scene mapScene = new Scene(mapLayout, 800, 600);
-
-        // Switch scenes on button click
-        openMapButton.setOnAction(e -> primaryStage.setScene(mapScene));
+        Button openMapButton = getMapButton(primaryStage);
 
         //ComboBoxes to display dropdowns
         ComboBox<String> comboBox1 = new ComboBox<>();
@@ -116,6 +110,50 @@ public class PropertyAssessmentsJavaFX extends Application {
         primaryStage.setTitle("Edmonton Garden Suite Data");
         primaryStage.setScene(scene);
         primaryStage.show();
+    }
+
+    private Button getMapButton(Stage primaryStage) {
+        Button openMapButton = new Button("Open Map");
+
+        // MapView for ArcGIS
+        final ArcGISMap map = new ArcGISMap(BasemapStyle.ARCGIS_TOPOGRAPHIC);
+
+        // Create a spatial reference using EPSG:4326 (WGS84)
+        SpatialReference spatialReference = SpatialReference.create(4326);
+
+        // create an initial extent envelope
+        Point leftPoint = new Point(-113.698640, 53.645195, spatialReference);
+        Point rightPoint = new Point(-113.308707, 53.428465, spatialReference);
+        Envelope initialExtent = new Envelope(leftPoint, rightPoint);
+
+        // create a viewpoint from envelope
+        Viewpoint viewPoint = new Viewpoint(initialExtent);
+
+        // set an initial extent on the map
+        map.setInitialViewpoint(viewPoint);
+
+        // create a map view and set the map to it
+        mapView = new MapView();
+        mapView.setMap(map);
+
+        // Map Scene
+        StackPane mapLayout = new StackPane(mapView);
+        Scene mapScene = new Scene(mapLayout, 800, 600);
+
+        // Switch scenes on button click
+        openMapButton.setOnAction(e -> primaryStage.setScene(mapScene));
+        return openMapButton;
+    }
+
+    /**
+     * Stops and releases all resources used in application.
+     */
+    @Override
+    public void stop() {
+
+        if (mapView != null) {
+            mapView.dispose();
+        }
     }
 
     /**
