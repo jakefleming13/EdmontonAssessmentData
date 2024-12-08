@@ -17,7 +17,6 @@ import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Point2D;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -87,7 +86,8 @@ public class PropertyAssessmentsJavaFX extends Application {
         ComboBox<String> comboBox3 = new ComboBox<>();
         ComboBox<String> comboBox4 = new ComboBox<>();
         comboBox1.getItems().addAll("", "<$200,000", "$200,000-$400,000", ">$400,000");
-        comboBox2.getItems().addAll("", "Downtown", "Oliver", "Bearspaw");
+        //Dropdown supports the 15 most common garden suite neighbourhoods
+        comboBox2.getItems().addAll("", "ALBERTA AVENUE", "BELGRAVIA", "BONNIE DOON", "GARNEAU", "GLENORA", "GLENWOOD", "GROVENOR", "HIGHLANDS", "INGLEWOOD", "MCKERNAN", "NORTH GLENORA", "PARKALLEN", "QUEEN ALEXANDRA", "RITCHIE", "STRATHCONA", "WESTMOUNT");
         comboBox3.getItems().addAll("", "<$75,000", "$75,000-$100,000", ">$100,000");
         comboBox4.getItems().addAll("", "<650 sq ft", "650 sq ft - 1200 sq ft", ">1200 sq ft");
 
