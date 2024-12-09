@@ -17,7 +17,6 @@ import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Point2D;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -87,7 +86,8 @@ public class PropertyAssessmentsJavaFX extends Application {
         ComboBox<String> comboBox3 = new ComboBox<>();
         ComboBox<String> comboBox4 = new ComboBox<>();
         comboBox1.getItems().addAll("", "<$200,000", "$200,000-$400,000", ">$400,000");
-        comboBox2.getItems().addAll("", "Downtown", "Oliver", "Bearspaw");
+        //Dropdown supports the 15 most common garden suite neighbourhoods
+        comboBox2.getItems().addAll("", "ALBERTA AVENUE", "BELGRAVIA", "BONNIE DOON", "GARNEAU", "GLENORA", "GLENWOOD", "GROVENOR", "HIGHLANDS", "INGLEWOOD", "MCKERNAN", "NORTH GLENORA", "PARKALLEN", "QUEEN ALEXANDRA", "RITCHIE", "STRATHCONA", "WESTMOUNT");
         comboBox3.getItems().addAll("", "<$75,000", "$75,000-$100,000", ">$100,000");
         comboBox4.getItems().addAll("", "<650 sq ft", "650 sq ft - 1200 sq ft", ">1200 sq ft");
 
@@ -212,14 +212,13 @@ public class PropertyAssessmentsJavaFX extends Application {
 
         // Add items to the legend
         legend.getChildren().addAll(
-                createLegendItem(Color.GREY, "1-3"),
-                createLegendItem(Color.LIGHTGREEN, "4-5"),
-                createLegendItem(Color.BLUE, "6-7"),
-                createLegendItem(Color.MAGENTA, "8-9"),
-                createLegendItem(Color.ORANGE, "10")
+                createLegendItem(Color.RED, "0-3"),
+                createLegendItem(Color.YELLOW, "3-5"),
+                createLegendItem(Color.LIGHTGREEN, "5-7"),
+                createLegendItem(Color.GREEN, "7-10")
         );
 
-        // Align the legend on the top-right corner
+        // Align the legend in the top-right corner
         StackPane.setAlignment(legend, Pos.TOP_RIGHT);
         legend.setPadding(new Insets(10));
 
@@ -252,7 +251,7 @@ public class PropertyAssessmentsJavaFX extends Application {
                 dialog.setHeaderText(null);
                 dialog.setTitle("Garden Suite Information");
                 dialog.setContentText("Address: " + graphic.getAttributes().get("ADDRESS") +
-                        "\nAssessed Value of parent: $" + graphic.getAttributes().get("ASSESSED_VALUE") +
+                        "\nAssessed Value of property: $" + graphic.getAttributes().get("ASSESSED_VALUE") +
                         "\nConstruction value of garden suite: $" + graphic.getAttributes().get("CONSTRUCTION_VALUE") +
                         "\nGrade: " + graphic.getAttributes().get("GRADE"));
                 dialog.showAndWait();
@@ -398,8 +397,6 @@ public class PropertyAssessmentsJavaFX extends Application {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        System.out.println(count);
 
         return propertyAssessments;
     }

@@ -16,18 +16,17 @@ public class GardenSuiteCreateMapPoints {
     public static void createMapPoints(List<PropertyAssessment> assessments, GraphicsOverlay graphicsOverlay){
         /**
          * Colour scheme for markers:
-         * 1-3 = grey
-         * 4-5 = green
-         * 6-7 = blue
-         * 8-9 = purple
-         * 10 = orange
+         * 0-3 red
+         * 3-5 yellow
+         * 5-7 lightgreen
+         * 7-10 green
          */
         // create different coloured diamond simple marker symbols
-        SimpleMarkerSymbol commonRatingSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbol.Style.DIAMOND, Color.GRAY, 10);
-        SimpleMarkerSymbol uncommonRatingSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbol.Style.DIAMOND, Color.LIGHTGREEN, 10);
-        SimpleMarkerSymbol rareRatingSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbol.Style.DIAMOND, Color.BLUE, 10);
-        SimpleMarkerSymbol epicRatingSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbol.Style.DIAMOND, Color.MAGENTA, 10);
-        SimpleMarkerSymbol legendaryRatingSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbol.Style.DIAMOND, Color.ORANGE, 10);
+        SimpleMarkerSymbol commonRatingSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbol.Style.DIAMOND, Color.RED, 8);
+        SimpleMarkerSymbol uncommonRatingSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbol.Style.DIAMOND, Color.YELLOW, 8);
+        SimpleMarkerSymbol rareRatingSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbol.Style.DIAMOND, Color.LIGHTGREEN, 8);
+        SimpleMarkerSymbol epicRatingSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbol.Style.DIAMOND, Color.GREEN, 8);
+        SimpleMarkerSymbol legendaryRatingSymbol = new SimpleMarkerSymbol(SimpleMarkerSymbol.Style.DIAMOND, Color.GREEN, 8);
 
         // Spatial reference
         final SpatialReference spatialReference = SpatialReference.create(4326);
@@ -46,9 +45,9 @@ public class GardenSuiteCreateMapPoints {
             // If ladder
             double grade = assessment.getGardenSuiteGrade();
 
-            if (grade < 4.0){graphic = new Graphic(coordinates, commonRatingSymbol);}
-            else if(grade < 6.0) {graphic = new Graphic(coordinates, uncommonRatingSymbol);}
-            else if(grade < 8.0) {graphic = new Graphic(coordinates, rareRatingSymbol);}
+            if (grade < 3.0){graphic = new Graphic(coordinates, commonRatingSymbol);}
+            else if(grade < 5.0) {graphic = new Graphic(coordinates, uncommonRatingSymbol);}
+            else if(grade < 7.0) {graphic = new Graphic(coordinates, rareRatingSymbol);}
             else if(grade < 10.0) {graphic = new Graphic(coordinates, epicRatingSymbol);}
             else{graphic = new Graphic(coordinates, legendaryRatingSymbol);}
 
