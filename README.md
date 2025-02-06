@@ -27,7 +27,6 @@ The core of the project is the calculation of a grade for each garden suite, pro
     score = (floor area - min floor area) / (max floor area - min floor area)
     ```
 *   **Units Added Score (15%):**  Reflects the number of rental units added (1 unit = 0.5, 2 units = 1.0).
-*   **Neighbourhood Adjustment:**  Applies an adjustment factor (0.2, 0.0, or -0.2) based on neighbourhood desirability.  *(Note: Specific neighbourhood designations and their corresponding adjustment values should be documented elsewhere, perhaps in a separate data dictionary or configuration file.)*
 
 The individual scores are then weighted, summed, and normalized across the entire dataset to ensure comparability and improve data quality.
 
